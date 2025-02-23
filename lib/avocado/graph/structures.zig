@@ -53,27 +53,22 @@ pub const Graph = struct {
         }
     }
 
-    /// Pretty-print the adjacency list of the graph.
+    /// Pretty-print the graph (DOT).
     pub fn prettyPrint(self: *Graph) !void {
         const stdout = std.io.getStdOut().writer();
 
-        stdout.writeAll("Graph: \n") catch return;
-        stdout.print("  isDirected: {}\n", .{self.isDirected}) catch return;
-        stdout.print("  Vertices: {d}\n", .{self.adjacency.items.len}) catch return;
-
+        try stdout.writeAll("graph g {\n");
         for (self.adjacency.items, 0..) |neighbors, i| {
-            stdout.print("    vtx={d} ~> ", .{i}) catch return;
             var iterator = neighbors.iterator();
-            var first = true;
             while (iterator.next()) |neighbor| {
-                if (!first) {
-                    stdout.writeAll(", ") catch return;
+                if (self.isDirected) {
+                    try stdout.print("    {d} -> {d}\n", .{ i, neighbor.key_ptr.* });
+                } else if (i < neighbor.key_ptr.*) {
+                    try stdout.print("    {d} -- {d}\n", .{ i, neighbor.key_ptr.* });
                 }
-                stdout.print("(vtx={d},wgt={d:.1})", .{ neighbor.key_ptr.*, neighbor.value_ptr.* }) catch return;
-                first = false;
             }
-            stdout.writeAll("\n") catch return;
         }
+        try stdout.writeAll("}\n");
     }
 };
 
